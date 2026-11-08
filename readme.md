@@ -213,3 +213,11 @@ python3 tools/agent_runner.py \
 - [架构与设计说明](docs/README.md)：设计动机、技术职责和扩展方向。
 - [Agent 工作流](docs/AGENT-WORKFLOW.md)：分阶段任务、证据、验证与 Skill 扩展。
 - [验证记录](docs/VALIDATION.md)：实际执行结果、已知风险和未验证范围。
+
+<!-- BEGIN chovy-readme-review -->
+## 多工程使用核对
+
+本目录保留Web/API与App两套工程边界，安装、配置与执行均在对应子目录进行；根目录没有统一package.json。后端专项入口见[后端API指南](web-api-agent-tests/docs/BACKEND-API.md)，设备外检查不能替代App设备回归。
+
+本轮针对chovy整体README做静态检查，没有重跑此前64项Web/API及其他历史测试。已有结果和限制见[验证记录](docs/VALIDATION.md)，按实际执行日期解读。
+<!-- END chovy-readme-review -->
