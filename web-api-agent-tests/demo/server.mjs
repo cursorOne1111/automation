@@ -1,6 +1,7 @@
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
+import { handleBackend } from './backend.mjs';
 
 // 每个测试使用独立租户，不提供全局 reset，避免并行用例相互污染。
 const tenants = new Map();
@@ -19,6 +20,7 @@ async function readJSON(req) {
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://localhost');
+    if (url.pathname.startsWith('/api/v1/')) return await handleBackend(req, res);
     if (url.pathname === '/health') return send(res, 200, { status: 'ok' });
     if (req.method === 'GET' && url.pathname === '/') {
       res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });

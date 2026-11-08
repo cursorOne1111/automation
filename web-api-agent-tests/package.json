@@ -16,7 +16,9 @@
     "report": "playwright show-report",
     "agent:init": "playwright init-agents --loop=codex",
     "agent": "python3 ../tools/agent_runner.py --project web",
-    "cli:skills": "playwright-cli install --skills=agents"
+    "cli:skills": "playwright-cli install --skills=agents",
+    "test:backend": "playwright test --project=backend-api",
+    "test:api:all": "playwright test --project=api --project=backend-api"
   },
   "devDependencies": {
     "@playwright/test": "1.65.0",

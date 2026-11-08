@@ -5,7 +5,8 @@ const port = Number(process.env.DEMO_PORT ?? 3100);
 const demoURL = `http://127.0.0.1:${port}`;
 const webURL = process.env.BASE_URL ?? demoURL;
 const apiURL = process.env.API_BASE_URL ?? webURL;
-const useDemo = webURL === demoURL || apiURL === demoURL;
+const backendURL = process.env.BACKEND_API_BASE_URL ?? apiURL;
+const useDemo = [webURL, apiURL, backendURL].includes(demoURL);
 
 export default defineConfig({
   testDir: './tests',
@@ -21,6 +22,7 @@ export default defineConfig({
     screenshot: 'only-on-failure', video: 'retain-on-failure',
   },
   projects: [
+    { name: 'backend-api', testMatch: /backend\/.*\.spec\.ts/, use: { baseURL: backendURL } },
     { name: 'api', testMatch: /api\/.*\.spec\.ts/, use: { baseURL: apiURL } },
     { name: 'chromium', testMatch: /ui\/.*\.spec\.ts/, use: { ...devices['Desktop Chrome'] } },
   ],
