@@ -1,6 +1,21 @@
 # Appium + Agent + Skill App 自动化测试框架
 
-使用 Appium 3 服务、Android UiAutomator2 / iOS XCUITest 驱动、Python Appium Client、Selenium 显式等待和 pytest。Agent 负责编写与维护测试，Appium 执行真实设备操作。
+本工程以 pytest 管理测试生命周期，通过 Appium 3 和 Python Appium Client 控制 Android/iOS 设备，分别使用 UiAutomator2 与 XCUITest 驱动。配置加载、会话创建、页面交互与失败证据分别封装，项目 Skills 用于辅助 App 场景规划、用例生成和失败分析。
+
+[项目总览](../readme.md) · [设计说明](../docs/README.md) · [Agent 工作流](../docs/AGENT-WORKFLOW.md) · [验证记录](../docs/VALIDATION.md)
+
+## 工程架构与测试分层
+
+| 层次 | 实现入口 | 职责与执行条件 |
+|---|---|---|
+| 平台配置 | [framework/settings.py](framework/settings.py)、[config/android.json](config/android.json)、[config/ios.json](config/ios.json) | 校验平台、加载 capabilities、应用环境变量覆盖 |
+| 驱动与生命周期 | [framework/driver.py](framework/driver.py)、[conftest.py](conftest.py) | 创建 W3C Options、建立会话、关闭驱动与采集失败证据 |
+| 页面交互 | [pages/base_page.py](pages/base_page.py)、[pages/login_page.py](pages/login_page.py) | 显式等待、控件交互与业务流程封装 |
+| 框架单元测试 | `tests/unit/` | 不连接设备，验证配置、驱动参数和报告链路 |
+| 设备烟测 | [tests/device/test_launch.py](tests/device/test_launch.py) | 需要 Appium、驱动、设备和 `--device` |
+| 业务端到端 | [tests/business/test_login.py](tests/business/test_login.py) | 额外需要实际 App、账号、页面定位与业务状态管理 |
+
+默认 pytest 仅收集框架单元测试。设备烟测与业务用例通过显式路径执行，各层的结果分别报告。
 
 ## 1. 先运行设备外验证
 
@@ -44,7 +59,7 @@ MOBILE_PLATFORM=android DEVICE_UDID=emulator-5554 python -m pytest --device test
 
 默认启动 Android 系统设置 `com.android.settings/.Settings`，无需 APK。厂商系统的设置 Activity 可能不同，需配置 `APP_PACKAGE` / `APP_ACTIVITY`。烟测验证会话、原生页面树、截图、目标应用前台。
 
-`.env` 中可配置设备名、UDID、系统版本，或用环境变量临时覆盖。配置加载优先级：环境变量 > 自定义 capabilities JSON > 平台默认 JSON。
+`.env` 中可配置设备名、UDID、系统版本，或用环境变量临时覆盖。配置加载顺序：按 `MOBILE_PLATFORM` 选择平台；存在 `CAPABILITIES_FILE` 时使用该文件替换默认 JSON，然后应用环境变量覆盖。自定义 JSON 不会与默认模板合并。
 
 ## 4. iOS 模拟器与真机
 
@@ -127,3 +142,41 @@ python3 ../tools/agent_runner.py --project mobile --role generate --plan specs/l
 | iOS WDA 构建失败 | Xcode、签名、真机信任、驱动兼容版本 |
 
 不要把连接失败改成 skip 来让 CI 变绿；设备外检查和设备测试应分别报告。当前验证范围见 [验证记录](../docs/VALIDATION.md)。
+
+## 8. 配置参考
+
+`conftest.py` 从工程 `.env` 加载配置，保留进程中已有环境变量。独立检查脚本也读取同一 `.env`。capabilities 中的 `platformName` 与 `appium:automationName` 必须匹配所选平台。
+
+| 参数 | 默认行为 | 说明 |
+|---|---|---|
+| `MOBILE_PLATFORM` | `android` | 仅接受 `android`、`ios` |
+| `APPIUM_URL` | `http://127.0.0.1:4723` | 支持无内嵌凭据的 HTTP(S) 地址 |
+| `CAPABILITIES_FILE` | 对应平台的 `config/*.json` | 自定义文件替换平台模板，相对路径基于工程目录 |
+| `DEVICE_NAME` / `DEVICE_UDID` / `PLATFORM_VERSION` | 模板值或未设置 | 覆盖设备标识与系统版本 |
+| `APP_PATH` | 未设置 | 本地 App 安装包或目录，必须存在 |
+| `APP_PACKAGE` / `APP_ACTIVITY` / `APP_BUNDLE_ID` | 默认系统设置入口 | 根据平台与实际 App 指定入口 |
+| `CAPTURES_PAGE_SOURCE` | 不采集 | 为 `1` 时额外保存失败页面树 |
+
+安装包、设备和入口必须相互匹配。模板不预置团队签名、设备云认证、测试账号或业务数据清理规则，这些配置应在真实项目接入时明确。
+
+## 9. 用例生命周期与开发规范
+
+测试启动时先解析并校验配置，`driver` fixture 再创建独立 Appium 会话。页面对象使用显式等待完成交互；失败报告阶段采集可用证据，测试结束后在 `finally` 中关闭会话。
+
+新增业务用例建议按以下顺序实施：
+
+1. 在 `specs/` 记录平台、App 版本、账号状态、权限弹窗和预期结果。
+2. 通过 Inspector 或页面树核实定位，把平台差异封装到页面对象。
+3. 明确安装与重置策略、登录前置条件以及测试后数据回收，确保用例可重复运行。
+4. 先验证框架，再执行指定设备用例，分别记录设备环境与测试报告。
+5. 用真实业务状态验证结果，审查 Agent 是否保留了原有断言和清理逻辑。
+
+默认配置采用单设备流程。并行执行需要额外规划设备 UDID、端口、账号与应用数据隔离，不能只增加 pytest 并发数。
+
+## 10. 持续集成与接入验收
+
+根目录 [qa.yml](../.github/workflows/qa.yml) 的 `mobile-framework` job 使用 Python 3.11，运行 Agent 调用器测试与 App 框架单元测试，归档 HTML/JUnit 与框架证据，保留 7 天。
+
+设备测试需要单独配置具备 Android 或 iOS 环境的 Runner，并提供驱动版本、App 构建、UDID 与所需签名。建议先以设备启动烟测验证基础环境，再执行业务用例；两个结果分别作为环境验收和业务回归依据。
+
+Appium 服务可用、框架单元测试通过、设备会话成功与业务断言通过分别代表不同层次的验证。接入记录应明确实际执行到哪一层，并在报告中保留未验证范围。

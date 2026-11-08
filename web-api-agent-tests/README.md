@@ -1,6 +1,21 @@
 # Web UI + API Agent 自动化测试框架
 
-采用 Playwright Test + TypeScript。UI 和 API 使用同一执行器、fixture 与报告，Agent 通过 `.agents/skills/` 规划、生成和诊断。
+本工程基于 Playwright Test + TypeScript，统一管理 Web UI 与 HTTP API 自动化。通过共享 fixture、接口客户端、页面对象和响应契约，实现测试数据隔离、跨层验证与失败证据留存；编码 Agent 通过项目 Skills 辅助规划、生成和维护用例。
+
+[项目总览](../readme.md) · [设计说明](../docs/README.md) · [Agent 工作流](../docs/AGENT-WORKFLOW.md) · [验证记录](../docs/VALIDATION.md)
+
+## 工程架构与职责
+
+| 模块 | 实现入口 | 维护职责 |
+|---|---|---|
+| 运行配置 | [playwright.config.ts](playwright.config.ts) | 目标环境、项目匹配、并发、重试、服务与报告 |
+| 数据与上下文 | [tests/fixtures.ts](tests/fixtures.ts) | 每用例租户、请求上下文、Page Object 注入与最终清理 |
+| 接口适配 | [src/api/todo-client.ts](src/api/todo-client.ts) | HTTP 交互封装与 Zod 响应契约 |
+| 页面适配 | [src/pages/todo-page.ts](src/pages/todo-page.ts) | 页面入口、语义定位和交互动作 |
+| 用例与计划 | [tests/api/todos.spec.ts](tests/api/todos.spec.ts)、[specs/todos.md](specs/todos.md) | 需求场景、业务断言与覆盖映射 |
+| Agent 约定 | [AGENTS.md](AGENTS.md)、`.agents/skills/` | 工程规则、证据依据与验证命令 |
+
+测试引擎直接运行已提交代码，无需模型服务。Agent 生成阶段只在新增或维护测试时使用；接入真实网站前需替换示例契约、定位和数据机制。
 
 ## 1. 快速运行
 
@@ -130,3 +145,35 @@ npx playwright-cli --help
 CI 配置1次重试用于识别波动，初次失败的 Trace 仍保留；重试通过不应自动视为没有问题。Playwright HTML 报告会标记 flaky 测试。需要强制 flaky 失败时可在项目流程中添加对应策略。
 
 报告、Trace 和截图可能含页面数据或网络凭据；默认已被 git 忽略，分享前先脱敏。测试和生成流程的实际验证状态见 [验证记录](../docs/VALIDATION.md)。
+
+## 7. 配置参考
+
+首次接入可复制 [.env.example](.env.example)。已有进程环境变量优先于 `.env`；配置的实际取值由运行配置和 fixture 共同决定。
+
+| 参数 | 默认值 | 作用 |
+|---|---|---|
+| `DEMO_PORT` | `3100` | 本地演示服务端口，同时构成默认地址 |
+| `BASE_URL` | `http://127.0.0.1:<DEMO_PORT>` | UI 地址；未指定 API 地址时也作为 API 默认地址 |
+| `API_BASE_URL` | `BASE_URL` 的实际值 | API 项目和 TodoClient 的请求基址 |
+| `API_TOKEN` | 未设置 | 为 TodoClient 请求上下文提供 Bearer token |
+| `CI` | 未设置 | 非空时禁止 test.only，设置 2 个 worker 与 1 次失败重试 |
+
+当 UI 或 API 任一地址等于本地 demo 地址时，框架会启动演示服务。启动判定使用地址字符串比较，修改地址时应保持端口和格式一致。使用带网关前缀的 API 地址时，需核实客户端以 `/` 开头的路径是否符合目标路由。
+
+当前配置启用并行执行、单用例 30 秒超时、断言等待 5 秒。上述值统一在运行配置中维护，新增用例应优先使用可观察的状态等待。
+
+## 8. 新增用例与代码审查
+
+1. 在 `specs/` 中记录场景编号、前置条件、输入、预期及清理方式。
+2. 在 `src/api/` 或 `src/pages/` 补充可复用的业务适配，避免在测试中重复定位和请求构造。
+3. 在对应 `tests/api/` 或 `tests/ui/` 添加用例，复用共享 fixture；新增资源必须有清理策略。
+4. 运行类型检查与相关测试，再运行完整回归，核实失败附件和数据残留。
+5. 审查断言是否覆盖业务结果、接口副作用和状态持久化，再提交变更。
+
+现有租户隔离只适用于本地 demo。真实业务需要基于实际服务设计隔离与回收策略；浏览器登录状态和 API 身份也需要分别处理。
+
+## 9. 持续集成与验收
+
+根目录 [qa.yml](../.github/workflows/qa.yml) 的 `web-api` job 安装锁定依赖与 Chromium，依次执行类型检查和完整测试，并归档 HTML/JUnit 与失败附件，保留 7 天。
+
+接入验收应同时满足：目标环境正确、核心流程可独立重跑、清理可靠、失败能定位、Agent 变更保留有效断言。当前执行矩阵为 Chromium；浏览器兼容性矩阵需要添加项目配置与相应用例后另行验证。

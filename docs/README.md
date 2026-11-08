@@ -1,6 +1,8 @@
-# Agent + Skill 自动化测试实战
+# Agent + Skill 自动化测试架构与设计说明
 
-这是两个可独立运行、可逐步接入真实业务的测试工程。Web/API 自带本地待办服务；App 提供 Android/iOS 真实设备适配和设备外框架验证。
+本文说明工程设计、模块职责与扩展方向。首次使用请从[项目总览](../readme.md)进入，按对应子工程指南完成环境准备与测试运行。
+
+项目提供两个可逐步接入真实业务的测试工程。Web/API 自带本地待办服务；App 提供 Android/iOS 驱动适配和设备外框架验证。实际设备兼容性与业务流程需在目标环境验证。
 
 | 项目 | 技术栈 | 入口 |
 |---|---|---|
@@ -13,7 +15,7 @@
 
 传统自动化由人分析需求、找定位器、写用例，再交给测试引擎执行。这里把规划、生成和诊断交给编码 Agent，测试引擎仍负责浏览器、设备、接口调用与断言。
 
-**Agent** 是能读取仓库、调用工具、修改代码和依据执行结果继续工作的模型运行时。本项目复用 Codex CLI 的工具循环，因此不是将几个提示词命名为 Agent，也没有自行实现或假装拥有模型推理服务。
+**Agent** 是能读取仓库、调用工具、修改代码和依据执行结果继续工作的模型运行时。本项目复用 Codex CLI 的工具循环，由其提供模型推理与工具调用能力；仓库中的 Python 调用器负责阶段派发、任务记录和外部验证。
 
 **Skill** 是有 `name`、`description` 和具体工作规则的 `SKILL.md`，按任务发现并加载。这里 Skills 存在每个工程的 `.agents/skills/` 中，随代码版本管理。它们告诉 Agent 使用哪些 fixture、在哪里找契约、怎样采集定位证据、运行什么命令、如何界定修复范围。
 
@@ -39,9 +41,9 @@ flowchart LR
 
 Playwright 官方提供 planner、generator、healer 测试 Agent，以及面向编码 Agent 的 CLI Skills，可直接复用生态。本工程在其测试引擎上增加 API 契约、数据隔离和仓库约定；也保留官方 Agent 定义的初始化入口。
 
-Appium 负责跨平台原生 App 自动化，Android 与 iOS 分别使用 UiAutomator2、XCUITest。这里没有把“官方 Playwright Agent 能直接控制原生 App”作为前提；移动端由自定义 Skill 指导 Agent 调用 Appium 脚本和 pytest。
+Appium 负责跨平台原生 App 自动化，Android 与 iOS 分别使用 UiAutomator2、XCUITest。移动端由自定义 Skill 指导 Agent 调用 Appium 脚本和 pytest，复用相同的计划、生成、执行和诊断流程。
 
-本项目采用可核实的官方 Agent/Skills 能力作为选型依据，没有声称某个工具的市场热度或排名。核心目标是可运行、可维护、可审查。
+技术选型优先考虑执行能力、官方工具支持与团队维护成本。浏览器与原生 App 使用各自的执行引擎，Agent 约定和验证记录在工程层统一管理。
 
 ## 3. 目录导航
 
