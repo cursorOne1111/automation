@@ -102,3 +102,9 @@ description: 根据支付接口契约生成测试环境的支付接口用例，�
 真实 App 回归建议在配有模拟器/真机的自托管 Runner 上增加独立 job，预先配置平台驱动、安装包、UDID、账号与签名；通过 `pytest --device tests/device` 和指定 `tests/business` 路径执行。设备并发需要独立账号、Appium端口、Android systemPort 或 iOS WDA端口规划，当前模板默认单设备。
 
 AI适合新增场景、维护定位与辅助诊断；提交后的稳定测试仍由 CI 确定性执行。对 Agent 生成的变更，应检查是否覆盖真实需求、是否削弱断言、是否引入状态污染，再进入正常代码审查流程。
+
+## 后端 API 专项任务
+
+订单、库存、角色与幂等场景复用 `qa-web-api`，指定 `web-api-agent-tests/specs/backend-api.md` 对应计划。调用器参数仍为 `--project web --kind api --plan specs/backend-api.md`。
+
+工程新增 `npm run test:backend` 与 `npm run test:api:all`，完整 `npm test` 自动包含后端专项。客户端使用独立登录会话与最终清理；真实接口接入步骤见 [后端专项指南](../web-api-agent-tests/docs/BACKEND-API.md)。

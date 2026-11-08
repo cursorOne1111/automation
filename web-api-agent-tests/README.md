@@ -2,7 +2,7 @@
 
 本工程基于 Playwright Test + TypeScript，统一管理 Web UI 与 HTTP API 自动化。通过共享 fixture、接口客户端、页面对象和响应契约，实现测试数据隔离、跨层验证与失败证据留存；编码 Agent 通过项目 Skills 辅助规划、生成和维护用例。
 
-[项目总览](../readme.md) · [设计说明](../docs/README.md) · [Agent 工作流](../docs/AGENT-WORKFLOW.md) · [验证记录](../docs/VALIDATION.md)
+[后端 API 专项指南](docs/BACKEND-API.md) · [项目总览](../readme.md) · [设计说明](../docs/README.md) · [Agent 工作流](../docs/AGENT-WORKFLOW.md) · [验证记录](../docs/VALIDATION.md)
 
 ## 工程架构与职责
 
@@ -36,12 +36,22 @@ Linux CI 首次安装浏览器使用 `npx playwright install --with-deps chromiu
 
 ```bash
 npm run test:api
+npm run test:backend
+npm run test:api:all
 npm run test:ui
 npm run test:headed
 npx playwright test --project=api --grep API-001
 ```
 
 默认测试配置拒绝复用已有 3100 端口服务，避免误测其他应用。端口占用时停止对应服务，或使用 `DEMO_PORT=3200 npm test`。若 `.env` 中已设置 URL，要同步改成新端口或删除 URL 配置。
+
+## 后端 API 专项
+
+独立 `backend-api` 项目使用 `/api/v1` 商品与订单服务，新增50个用例，覆盖Token鉴权、角色与租户、参数边界、协议错误、金额、库存、幂等、版本与并发一致性。它复用 Playwright 执行与报告体系，客户端、fixture和业务契约独立于待办示例。
+
+`npm run test:api` 保持运行原待办接口；`npm run test:backend` 运行后端专项；`npm run test:api:all` 运行两组接口；`npm test` 包含UI及全部接口项目。专项无需安装浏览器。
+
+完整接口表、权限矩阵、数据基线、并发不变量、真实环境接入与Agent示例见 [后端 API 测试指南](docs/BACKEND-API.md)，用例映射见 [后端测试计划](specs/backend-api.md)。
 
 ## 2. 已实现的测试
 
@@ -79,7 +89,7 @@ Todo 形状：`{ id: UUID, title: string, completed: boolean }`。无效字段42
 cp .env.example .env
 ```
 
-修改 `BASE_URL` 与 `API_BASE_URL`，可分别指向前端与接口测试环境。两者都指向非 demo 地址时，自动启动演示服务的配置会关闭。
+修改 `BASE_URL` 与 `API_BASE_URL`，可分别指向前端与接口测试环境。UI、待办 API 与 `BACKEND_API_BASE_URL` 的实际地址都指向非 demo 地址时，自动启动演示服务的配置会关闭。
 
 需要同时修改的代码：
 
@@ -155,10 +165,11 @@ CI 配置1次重试用于识别波动，初次失败的 Trace 仍保留；重试
 | `DEMO_PORT` | `3100` | 本地演示服务端口，同时构成默认地址 |
 | `BASE_URL` | `http://127.0.0.1:<DEMO_PORT>` | UI 地址；未指定 API 地址时也作为 API 默认地址 |
 | `API_BASE_URL` | `BASE_URL` 的实际值 | API 项目和 TodoClient 的请求基址 |
+| `BACKEND_API_BASE_URL` | `API_BASE_URL` 的实际值 | 后端订单与库存专项地址，独立登录与角色账号 |
 | `API_TOKEN` | 未设置 | 为 TodoClient 请求上下文提供 Bearer token |
 | `CI` | 未设置 | 非空时禁止 test.only，设置 2 个 worker 与 1 次失败重试 |
 
-当 UI 或 API 任一地址等于本地 demo 地址时，框架会启动演示服务。启动判定使用地址字符串比较，修改地址时应保持端口和格式一致。使用带网关前缀的 API 地址时，需核实客户端以 `/` 开头的路径是否符合目标路由。
+当 UI、待办 API 或后端专项任一地址等于本地 demo 地址时，框架会启动演示服务。启动判定使用地址字符串比较，修改地址时应保持端口和格式一致。使用带网关前缀的 API 地址时，需核实客户端以 `/` 开头的路径是否符合目标路由。
 
 当前配置启用并行执行、单用例 30 秒超时、断言等待 5 秒。上述值统一在运行配置中维护，新增用例应优先使用可观察的状态等待。
 

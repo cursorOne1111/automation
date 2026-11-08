@@ -7,6 +7,7 @@
 | 阅读目标 | 文档入口 |
 |---|---|
 | 运行 Web UI 与接口测试 | [Web/API 工程指南](web-api-agent-tests/README.md) |
+| 运行后端订单、库存与权限测试 | [后端 API 专项指南](web-api-agent-tests/docs/BACKEND-API.md) |
 | 运行 App 框架检查与设备测试 | [App 工程指南](mobile-agent-tests/README.md) |
 | 了解 Agent 分阶段执行与 Skills | [Agent 工作流](docs/AGENT-WORKFLOW.md) |
 | 查看设计说明与扩展方向 | [架构与设计说明](docs/README.md) |
@@ -61,6 +62,7 @@ Agent 角色按阶段调用；常规 CI 执行已提交的测试代码。生成�
 |---|---|---|
 | Web UI | Chromium、Page Object、自动等待、网络异常模拟 | 可直接运行本地待办示例 |
 | HTTP API | 生命周期、边界输入、状态码、Zod 契约、数据隔离 | 真实业务需替换接口与鉴权 |
+| 后端专项 | Token/角色/租户、订单库存、幂等、版本冲突、并发防超卖 | 50个本地业务用例，真实后端需替换契约与数据基线 |
 | UI/API 联动 | API 准备数据、浏览器验证业务展示 | 复用 fixture 与租户清理 |
 | Android / iOS | UiAutomator2 / XCUITest 配置与启动烟测 | 需安装驱动并连接设备 |
 | App 业务流程 | 基于 accessibility ID 的登录实现示例 | 需提供真实 App、定位和账号 |
@@ -125,7 +127,7 @@ npm test
 npm run report
 ```
 
-默认自动启动并关闭 `http://127.0.0.1:3100` 的演示服务。单独执行接口或页面测试可使用 `npm run test:api`、`npm run test:ui`。Linux 首次运行需安装浏览器系统依赖，具体见子工程指南。
+默认自动启动并关闭 `http://127.0.0.1:3100` 的演示服务。单独执行待办接口、后端专项或页面测试可使用 `npm run test:api`、`npm run test:backend`、`npm run test:ui`；`npm run test:api:all` 执行全部接口。Linux 首次运行需安装浏览器系统依赖，具体见子工程指南。
 
 ### App 框架检查
 
@@ -206,6 +208,7 @@ python3 tools/agent_runner.py \
 ## 文档索引
 
 - [Web UI + API 工程指南](web-api-agent-tests/README.md)：运行、配置、契约和用例开发。
+- [后端 API 专项指南](web-api-agent-tests/docs/BACKEND-API.md)：鉴权、权限、订单、库存、幂等和并发一致性。
 - [App 工程指南](mobile-agent-tests/README.md)：Android/iOS 环境、设备、业务接入和故障排查。
 - [架构与设计说明](docs/README.md)：设计动机、技术职责和扩展方向。
 - [Agent 工作流](docs/AGENT-WORKFLOW.md)：分阶段任务、证据、验证与 Skill 扩展。

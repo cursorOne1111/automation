@@ -7,6 +7,7 @@
 | 项目 | 技术栈 | 入口 |
 |---|---|---|
 | Web UI + 接口 | Playwright Test、TypeScript、Zod、HTML/JUnit/Trace | [操作指南](../web-api-agent-tests/README.md) |
+| 后端 API 专项 | Token/角色、订单库存、幂等、版本冲突、并发不变量 | [后端专项指南](../web-api-agent-tests/docs/BACKEND-API.md) |
 | Android / iOS | Appium 3、UiAutomator2/XCUITest、pytest、Page Object | [操作指南](../mobile-agent-tests/README.md) |
 | Agent 工作流 | Codex CLI、仓库级 Skills、分阶段任务、独立回归 | [详细原理与实操](AGENT-WORKFLOW.md) |
 | 验证记录 | 本次实际命令与范围 | [验证记录](VALIDATION.md) |
@@ -85,7 +86,7 @@ QA-Automation/
 
 演示服务使用内存数据，无身份认证、持久化和生产级限流；`x-test-tenant` 是示例隔离机制。真实项目需要测试账号、数据库隔离或可靠的创建/清理接口，不能照搬租户头当作权限方案。
 
-当前默认验证 Chromium；Firefox/WebKit、多设备矩阵、视觉回归、性能测试、云真机与 Allure 可以按实际需求扩展，尚未实现。接口示例没有覆盖生产鉴权；`API_TOKEN` 仅提供传递真实测试 token 的接入点。
+当前默认验证 Chromium；Firefox/WebKit、多设备矩阵、视觉回归、性能测试、云真机与 Allure 可以按实际需求扩展，尚未实现。待办接口的 `API_TOKEN` 提供测试 token 接入点；后端专项另有演示登录与角色验证，真实生产鉴权仍需按实际协议适配。
 
 业务 App 登录是可接入的实现示例，账号和 accessibility ID 必须来自实际 App。默认 App 测试只打开系统设置验证会话与应用前台，不能等同于业务流程覆盖。
 
