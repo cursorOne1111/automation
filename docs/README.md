@@ -55,7 +55,8 @@ QA-Automation/
 │   ├── demo/                # 本地页面和真实 HTTP 服务
 │   ├── src/api/             # API 客户端和 Zod 契约
 │   ├── src/pages/           # Page Object
-│   ├── tests/api/           # 接口用例
+│   ├── tests/backend/       # 后端鉴权、订单、幂等与并发用例
+│   ├── tests/api/           # 待办接口用例
 │   ├── tests/ui/            # UI 用例和 Agent seed
 │   ├── tests/fixtures.ts    # 独立租户、上下文、清理
 │   ├── specs/               # 可供 Agent 消费的测试计划

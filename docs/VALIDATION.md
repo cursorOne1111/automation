@@ -41,3 +41,23 @@ App框架报告：mobile-agent-tests/artifacts/unit-report.html；JUnit：mobile
 探索截图、任务包、失败证据在各工程 artifacts/ 内，均被 Git 忽略。
 
 先按两个工程 README 运行本地示例，再替换真实环境契约和定位。App先跑系统设置启动烟测，再接入业务登录；不要将设备外通过结果作为业务端到端覆盖。
+
+## 后端 API 扩展验证（2026-11-08）
+
+新增本地 `/api/v1` 商品与订单服务、BackendClient、Zod响应契约、独立fixture及后端专项计划。服务扩展不改变原有 `/api/todos` 路径及测试命令含义。
+
+| 检查 | 实际结果 |
+|---|---|
+| npm run typecheck | 通过 |
+| npm run test:backend | 50 passed：鉴权14、订单10、输入与协议26 |
+| npm test -- --reporter=line | 64 passed：后端50 + 原待办接口10 + Chromium4 |
+| npm run test:api:all -- --list | 收集60个接口用例，命令选择正确 |
+| 更新后的 qa-web-api Skill | quick_validate.py 通过 |
+| 文档检查 | 47个本地相对链接、16个Shell代码块通过 |
+| 后端与主服务脚本语法 | node --check 通过 |
+
+原始JSON负向用例使用Buffer发送，避免HTTP客户端将畸形字符串重新序列化成合法JSON。并发场景核对成功/冲突次数、资源唯一性、持久化状态、库存守恒和单次回补。
+
+专项和完整回归都使用真实本地HTTP请求，不需要模型。完整报告使用默认npm test生成于既有HTML/JUnit目录。本次未重跑App或调用器测试，前述相关结果为此前验证记录。
+
+并发结果仅适用于单Node进程内存示例，不证明数据库事务、跨服务一致性、分布式幂等、限流或生产负载性能。Token自然过期、数据库异常、外部依赖超时等场景未实现。真实后端接入需要替换认证、契约、测试数据基线与清理机制，详见[专项指南](../web-api-agent-tests/docs/BACKEND-API.md)。
