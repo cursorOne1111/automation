@@ -1,0 +1,15 @@
+node_modules/
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+.env
+.env.*
+!.env.example
+playwright-report/
+test-results/
+artifacts/
+*.apk
+*.ipa
+*.app/
+.DS_Store

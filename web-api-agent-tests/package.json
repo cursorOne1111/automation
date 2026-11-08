@@ -1,0 +1,29 @@
+{
+  "name": "web-api-agent-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "demo": "node demo/server.mjs",
+    "test": "playwright test",
+    "test:api": "playwright test --project=api",
+    "test:ui": "playwright test --project=chromium",
+    "test:headed": "playwright test --project=chromium --headed",
+    "typecheck": "tsc --noEmit",
+    "report": "playwright show-report",
+    "agent:init": "playwright init-agents --loop=codex",
+    "agent": "python3 ../tools/agent_runner.py --project web",
+    "cli:skills": "playwright-cli install --skills=agents"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "@playwright/cli": "0.1.23",
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0",
+    "dotenv": "^17.0.0",
+    "zod": "^4.0.0"
+  }
+}

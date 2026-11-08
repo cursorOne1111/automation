@@ -1,0 +1,8 @@
+{
+  "platformName": "iOS",
+  "appium:automationName": "XCUITest",
+  "appium:deviceName": "iPhone Simulator",
+  "appium:bundleId": "com.apple.Preferences",
+  "appium:noReset": false,
+  "appium:newCommandTimeout": 120
+}

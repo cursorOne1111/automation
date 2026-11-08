@@ -1,0 +1,17 @@
+{
+  "name": "mobile-agent-test-server",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.12.0",
+    "npm": ">=10"
+  },
+  "scripts": {
+    "server": "appium --address 127.0.0.1 --port 4723",
+    "doctor:android": "appium driver doctor uiautomator2",
+    "drivers": "appium driver list --installed"
+  },
+  "devDependencies": {
+    "appium": "3.9.0"
+  }
+}

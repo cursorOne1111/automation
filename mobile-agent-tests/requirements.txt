@@ -1,0 +1,7 @@
+# 保留 Python 3.9 兼容性；升级需同时验证 Appium/Selenium 兼容矩阵。
+Appium-Python-Client==5.1.1
+selenium==4.32.0
+pytest==8.3.5
+pytest-html==4.1.1
+python-dotenv==1.1.0
+PyYAML==6.0.2
