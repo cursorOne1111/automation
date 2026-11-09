@@ -1,4 +1,4 @@
-# QA Automation · Agent + Skill 自动化测试工程
+#Automation · Agent + Skill 自动化测试工程
 
 面向 Web UI、HTTP API 与 Android/iOS App 的自动化测试工程。项目以 Playwright 和 Appium 为执行基础，通过仓库级 Skills 与编码 Agent 协作完成需求分析、测试生成、失败诊断和测试维护，保留可独立运行的测试代码与验证记录。
 
